@@ -386,14 +386,7 @@ instance Pretty Parameter where
         -- If the braces are on different lines, keep them like that
         if sourceLine bopen /= sourceLine bclose
           then hardline
-          else case attrs of
-            [ParamEllipsis _] -> line
-            -- Attributes must be without default
-            [ParamAttr _ Nothing _] -> line
-            [ParamAttr _ Nothing _, ParamEllipsis _] -> line
-            [ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
-            [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamEllipsis _] -> line
-            _ -> hardline
+          else line
   pretty (ContextParameter param1 at param2) =
     pretty param1 <> pretty at <> pretty param2
 
