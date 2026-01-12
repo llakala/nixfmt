@@ -21,6 +21,7 @@ module Nixfmt.Predoc (
   line,
   hardspace,
   hardline,
+  nospace,
   emptyline,
   newline,
   DocE,
@@ -73,6 +74,7 @@ data Spacing
     Emptyline
   | -- | n line breaks
     Newlines Int
+  | Nospace
   deriving (Show, Eq, Ord)
 
 -- | `Group docs` indicates that either all or none of the Spaces and Breaks
@@ -217,6 +219,9 @@ line = [Spacing Space]
 -- | Always space
 hardspace :: Doc
 hardspace = [Spacing Hardspace]
+
+nospace :: Doc
+nospace = [Spacing Nospace]
 
 -- | Always line break
 hardline :: Doc
@@ -420,6 +425,7 @@ fits ni c (x : xs) = case x of
   Spacing Softspace -> (" " <>) <$> fits (ni - 1) (c - 1) xs
   Spacing Space -> (" " <>) <$> fits (ni - 1) (c - 1) xs
   Spacing Hardspace -> (" " <>) <$> fits (ni - 1) (c - 1) xs
+  Spacing Nospace -> ("" <>) <$> fits (ni - 1) (c - 1) xs
   Spacing Hardline -> Nothing
   Spacing Emptyline -> Nothing
   Spacing (Newlines _) -> Nothing
@@ -565,6 +571,7 @@ layoutGreedy tw iw doc = Text.concat $ evalState (go [Group RegularG doc] []) (0
                   Break -> putNL 1
                   Space -> putNL 1
                   Hardspace -> putText' [" "]
+                  Nospace -> putText' [""]
                   Hardline -> putNL 1
                   Emptyline -> putNL 2
                   (Newlines n) -> putNL n
