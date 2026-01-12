@@ -173,8 +173,7 @@ instance Pretty Binder where
         <> sep
         <> nest (sepBy sep ids <> nosep <> pretty semicolon)
     where
-      -- Only allow a single line if it's already on a single line and has few enough elements
-      (sep, nosep) = if sourceLine inherit == sourceLine semicolon && length ids < 4 then (line, line') else (hardline, hardline)
+      (sep, nosep) = (line, line')
   -- `inherit (foo) bar` statement
   pretty (Inherit inherit (Just source) ids semicolon) =
     group $
@@ -187,8 +186,7 @@ instance Pretty Binder where
               <> pretty semicolon
           )
     where
-      -- Only allow a single line if it's already on a single line and has few enough elements
-      (sep, nosep) = if sourceLine inherit == sourceLine semicolon && length ids < 4 then (line, line') else (hardline, hardline)
+      (sep, nosep) = (line, line')
   -- `foo = bar`
   pretty (Assignment selectors assign expr semicolon) =
     group $
