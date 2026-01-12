@@ -407,9 +407,10 @@ instance Pretty Parameter where
       handleTrailingComma (x : xs) = pretty x : handleTrailingComma xs
 
       sep =
-        if canFlattenAttrs bopen attrs bclose
-          then line
-          else hardline
+        -- If the braces are on different lines, keep them like that
+        if sourceLine bopen /= sourceLine bclose
+          then hardline
+          else line
   pretty (ContextParameter param1 at param2) =
     pretty param1 <> pretty at <> pretty param2
 
