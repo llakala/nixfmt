@@ -596,14 +596,23 @@ prettyWith True (With with expr0 semicolon (Term expr1)) =
       <> group' Priority (prettyTermWide expr1)
 -- Normal case
 prettyWith _ (With with expr0 semicolon expr1) =
-  group
-    ( pretty with
-        <> hardspace
-        <> nest (group expr0)
-        <> pretty semicolon
-    )
-    <> line
-    <> pretty expr1
+  let
+    -- `with pkgs; [` and  `with foo; {` if nonempty
+    sep = case expr1 of
+      Term (List _ (Items []) _) -> line
+      Term (List _ _ _) -> hardspace
+      Term (Set _ _ (Items []) _) -> line
+      Term (Set _ _ _ _) -> hardspace
+      _ -> line
+  in
+    group
+      ( pretty with
+          <> hardspace
+          <> nest (group expr0)
+          <> pretty semicolon
+      )
+      <> sep
+      <> pretty expr1
 prettyWith _ _ = error "unreachable"
 
 -- Check if a set of parameter attributes is simple enough to fit on one line:
@@ -755,8 +764,7 @@ absorbRHS expr = case expr of
 instance Pretty Expression where
   pretty (Term t) = pretty t
   pretty with@(With{}) = prettyWith False with
-  -- Let bindings are always fully expanded (no single-line form)
-  -- We also take the comments around the `in` (trailing, leading and detached binder comments)
+  -- We take the comments around the `in` (trailing, leading and detached binder comments)
   -- and move them down to the first token of the body
   pretty (Let let_ binders Ann{preTrivia, value = in_, trailComment} expr) =
     letPart <> hardline <> inPart
@@ -774,10 +782,18 @@ instance Pretty Expression where
 
       letPart = group $ pretty let_ <> hardline <> letBody
       letBody = nest $ renderItems hardline binders
+      -- Lists and attrsets get to look like `in {` if they're nonempty.
+      -- Everything else on a newline
+      sep = case expr of
+        Term (List _ (Items []) _) -> hardline
+        Term (List _ _ _) -> hardspace
+        Term (Set _ _ (Items []) _) -> hardline
+        Term (Set _ _ _ _) -> hardspace
+        _ -> hardline
       inPart =
         group $
           pretty in_
-            <> hardline
+            <> sep
             <> pretty expr'
   pretty (Assert assert cond semicolon expr) =
     group $
