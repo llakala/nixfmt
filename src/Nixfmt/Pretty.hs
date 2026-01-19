@@ -62,7 +62,6 @@ import Nixfmt.Types (
   Trivia,
   Trivium (..),
   Whole (..),
-  ann,
   hasPreTrivia,
   hasTrivia,
   mapFirstToken,
@@ -352,7 +351,6 @@ moveParamAttrComment x = x
 
 -- When a `, name` entry has some line comments before it, they are actually attached to the comment
 -- of the preceding item. Move them to the next one
--- Also adds the trailing comma on the last element if necessary
 moveParamsComments :: [ParamAttr] -> [ParamAttr]
 moveParamsComments
   -- , name1
@@ -375,8 +373,6 @@ moveParamsComments
     [ ParamAttr name maybeDefault (Just (comma{preTrivia = []})),
       ParamEllipsis (ellipsis{preTrivia = trivia <> trivia'})
     ]
--- Inject a trailing comma on the last element if necessary
-moveParamsComments [ParamAttr name@Ann{sourceLine} def Nothing] = [ParamAttr name def (Just (ann sourceLine TComma))]
 moveParamsComments (x : xs) = x : moveParamsComments xs
 moveParamsComments [] = []
 
