@@ -796,18 +796,23 @@ instance Pretty Expression where
     -- If the first `if` or any `else` has a trailing comment, move it up.
     -- However, don't any subsequent `if` (`else if`). We could do that, but that
     -- would require taking care of edge cases which are not worth handling.
-    group' RegularG $ prettyIf line $ mapFirstToken moveTrailingCommentUp expr
+    group' RegularG $ prettyIf True $ mapFirstToken moveTrailingCommentUp expr
     where
       -- Recurse to absorb nested "else if" chains
-      prettyIf :: Doc -> Expression -> Doc
-      prettyIf sep (If if_ cond then_ expr0 else_ expr1) =
+      prettyIf :: Bool -> Expression -> Doc
+      prettyIf inferSep (If if_ cond then_ expr0 else_ expr1) =
+        let
+          sep =
+            if inferSep && isSimple expr0 && isSimple expr1 then line
+            else hardline
+        in
         -- `if cond then` if it fits on one line, otherwise `if\n  cond\nthen` (with cond indented)
         group (pretty if_ <> line <> nest (pretty cond) <> line <> pretty then_)
           <> surroundWith sep (nest $ group expr0)
           -- Using hardline here is okay because it will only apply to nested ifs, which should not be inline anyways.
           <> pretty (moveTrailingCommentUp else_)
           <> hardspace
-          <> prettyIf hardline expr1
+          <> prettyIf False expr1
       prettyIf _ x =
         line <> nest (group x)
 
@@ -876,8 +881,11 @@ isSimple (Term (Token (LoneAnn (Identifier _)))) = True
 isSimple (Term (Token (LoneAnn (Integer _)))) = True
 isSimple (Term (Token (LoneAnn (Float _)))) = True
 isSimple (Term (Token (LoneAnn (EnvPath _)))) = True
+isSimple (Term (Set _ _ (Items []) _)) = True -- empty attrset
+isSimple (Term (List _ (Items []) _)) = True -- empty list
 isSimple (Term (Selection t selectors def)) =
   isSimple (Term t) && all isSimpleSelector selectors && isNothing def
+isSimple (Term (Parenthesized (LoneAnn _) (Application _ _) (LoneAnn _))) = False -- nested functions arent simple
 isSimple (Term (Parenthesized (LoneAnn _) e (LoneAnn _))) = isSimple e
 -- Function applications of simple terms are simple up to two arguments
 isSimple (Application (Application (Application _ _) _) _) = False
