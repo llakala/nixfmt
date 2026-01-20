@@ -673,6 +673,7 @@ isAbsorbable (Parenthesized (LoneAnn _) (Term t) _) =
   where
     isLangAnnotation (LanguageAnnotation _) = True
     isLangAnnotation _ = False
+isAbsorbable (Parenthesized _ (If _ _ _ _ _ _) _) = True
 isAbsorbable _ = False
 
 isAbsorbableTerm :: Term -> Bool
