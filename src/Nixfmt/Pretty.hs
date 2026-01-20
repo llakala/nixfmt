@@ -540,7 +540,13 @@ prettyOp forceFirstTermWide operation op =
       -- First element
       prettyOperation (Nothing, Term t) | isAbsorbableTerm t && forceFirstTermWide = prettyTermWide t
       prettyOperation (Nothing, expr) = pretty expr
-      -- The others
+
+      prettyOperation (Just op'@(Ann{value}), expr@(Term (Parenthesized _ _ _))) =
+        let
+          sep = if isUpdateConcatPlus value then hardspace else line
+        in
+        sep <> pretty (moveTrailingCommentUp op') <> nest (absorbOperation expr)
+
       prettyOperation (Just op', expr) =
         line <> pretty (moveTrailingCommentUp op') <> nest (absorbOperation expr)
   in group' RegularG $
@@ -643,6 +649,12 @@ absorbExpr False (Term t) | isAbsorbableTerm t = prettyTerm t
 absorbExpr _ expr@(With _ _ _ (Term t)) | isAbsorbableTerm t = prettyWith True expr
 absorbExpr _ expr = pretty expr
 
+isUpdateConcatPlus :: Token -> Bool
+isUpdateConcatPlus TUpdate = True
+isUpdateConcatPlus TConcat = True
+isUpdateConcatPlus TPlus = True
+isUpdateConcatPlus _ = False
+
 -- Render the RHS value of an assignment or function parameter default value
 absorbRHS :: Expression -> Doc
 absorbRHS expr = case expr of
@@ -686,11 +698,6 @@ absorbRHS expr = case expr of
   -- If it fits on one line but with a newline after the `=`, it fits (including semicolon)
   -- Otherwise, start on new line, expand fully (including the semicolon)
   _ -> nest $ line <> group expr
-  where
-    isUpdateConcatPlus TUpdate = True
-    isUpdateConcatPlus TConcat = True
-    isUpdateConcatPlus TPlus = True
-    isUpdateConcatPlus _ = False
 
 instance Pretty Expression where
   pretty (Term t) = pretty t
