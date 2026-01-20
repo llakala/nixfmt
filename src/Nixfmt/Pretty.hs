@@ -607,6 +607,7 @@ isAbsorbable (List paropen items _)
 isAbsorbable (Set _ paropen items _)
   | hasTrivia paropen || hasOnlyComments items = True
 isAbsorbable (Parenthesized (LoneAnn _) (Term t) _) = isAbsorbable t
+isAbsorbable (Parenthesized _ (If if_ cond then_ expr0 else_ expr1) _) = True
 isAbsorbable _ = False
 
 isAbsorbableTerm :: Term -> Bool
