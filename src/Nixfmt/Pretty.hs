@@ -399,7 +399,7 @@ instance Pretty Parameter where
       handleTrailingComma [] = []
       -- That's the case we're interested in
       handleTrailingComma [ParamAttr name maybeDefault (Just (LoneAnn TComma))] =
-        [pretty (ParamAttr name maybeDefault Nothing) <> trailing ","]
+        [pretty (ParamAttr name maybeDefault Nothing)]
       handleTrailingComma (x : xs) = pretty x : handleTrailingComma xs
 
       sep =
