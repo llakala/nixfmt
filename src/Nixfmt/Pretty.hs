@@ -397,7 +397,7 @@ instance Pretty Parameter where
       -- This is so that the trailing comma will only be printed in the expanded form
       handleTrailingComma :: [ParamAttr] -> [Doc]
       handleTrailingComma [] = []
-      -- That's the case we're interested in
+      -- Remove all trailing commas
       handleTrailingComma [ParamAttr name maybeDefault (Just (LoneAnn TComma))] =
         [pretty (ParamAttr name maybeDefault Nothing)]
       handleTrailingComma (x : xs) = pretty x : handleTrailingComma xs
