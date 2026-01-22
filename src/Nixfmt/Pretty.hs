@@ -403,10 +403,17 @@ instance Pretty Parameter where
       handleTrailingComma (x : xs) = pretty x : handleTrailingComma xs
 
       sep =
-        -- If the braces are on different lines, keep them like that
-        if sourceLine bopen /= sourceLine bclose
-          then hardline
-          else line
+        case attrs of
+          [ParamEllipsis _] -> line
+          -- `{ ... }:`, `{ foo }:`, `{ foo, ... }:`, `{ foo, bar }:`,
+          -- `{ foo, bar, ... }:`, and `{ foo, bar, baz }:` get to stay on one
+          -- line
+          [ParamAttr _ Nothing _] -> line
+          [ParamAttr _ Nothing _, ParamEllipsis _] -> line
+          [ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
+          [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamEllipsis _] -> line
+          [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
+          _ -> hardline
   pretty (ContextParameter param1 at param2) =
     pretty param1 <> pretty at <> pretty param2
 
