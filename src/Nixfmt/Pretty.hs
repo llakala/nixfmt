@@ -414,8 +414,13 @@ instance Pretty Parameter where
           [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamEllipsis _] -> line
           [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
           _ -> hardline
-  pretty (ContextParameter param1 at param2) =
-    pretty param1 <> pretty at <> pretty param2
+
+  -- Add spaces around @ in `{ foo, bar } @ baz`, and always put the `@ baz` at
+  -- the end, not the beginning
+  pretty (ContextParameter atvar@(IDParameter {}) at setpar) =
+    pretty setpar <> hardspace <> pretty at <> hardspace <> pretty atvar
+  pretty (ContextParameter setpar at atvar) =
+    pretty setpar <> hardspace <> pretty at <> hardspace <> pretty atvar
 
 -- Function application
 -- Some example mapping of Nix code to Doc (using brackets as groups, but omitting the outermost group
