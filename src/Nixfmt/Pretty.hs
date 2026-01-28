@@ -39,7 +39,6 @@ import Nixfmt.Predoc (
   surroundWith,
   text,
   textWidth,
-  trailing,
   trailingComment,
   unexpandSpacing',
  )
