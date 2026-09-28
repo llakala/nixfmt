@@ -412,6 +412,7 @@ instance Pretty Parameter where
           [ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
           [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamEllipsis _] -> line
           [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamAttr _ Nothing _] -> line
+          [ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamAttr _ Nothing _, ParamEllipsis _] -> line
           _ -> hardline
 
   -- Add spaces around @ in `{ foo, bar } @ baz`, and always put the `@ baz` at
